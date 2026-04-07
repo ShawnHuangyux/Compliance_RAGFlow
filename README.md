@@ -18,6 +18,7 @@ Built on [RAGFlow](https://github.com/infiniflow/ragflow), ComplianceRAG is a bi
 | 📊 差距分析 | 输入企业内部文档，自动输出结构化 JSON 差距报告 |
 | 🔍 跨语言检索 | 中文问题可检索英文文档，反之亦然 |
 | 🤖 Agent 工作流 | 基于 RAGFlow Agent Canvas 配置，无需修改核心代码 |
+| 📈 可视化报告 | Streamlit 界面展示雷达图、覆盖率对比图及差距详情 |
 
 | Feature | Description |
 |---------|-------------|
@@ -26,6 +27,7 @@ Built on [RAGFlow](https://github.com/infiniflow/ragflow), ComplianceRAG is a bi
 | 📊 Gap analysis | Input any internal policy doc; receive a structured JSON gap report |
 | 🔍 Cross-language retrieval | Chinese queries can surface English documents and vice versa |
 | 🤖 Agent workflows | Configured via RAGFlow Agent Canvas — no core code changes required |
+| 📈 Visual dashboard | Streamlit UI with radar chart, coverage bar chart, and gap detail cards |
 
 ---
 
@@ -50,7 +52,7 @@ Built on [RAGFlow](https://github.com/infiniflow/ragflow), ComplianceRAG is a bi
 - **Layer 0 — RAGFlow Core**：原版 Docker 部署，不修改 / Vanilla Docker deployment, untouched
 - **Layer 1 — 知识库配置**：文档导入、chunking 策略、元数据标签 / Document ingestion, chunking, metadata tagging
 - **Layer 2 — Agent 工作流**：双语问答 Agent + 差距分析 Agent / Bilingual Q&A Agent + Gap Analysis Agent
-- **Layer 3 — 轻量封装**：Python 调用脚本、批量分析工具 / Python call scripts, batch analysis tools
+- **Layer 3 — 轻量封装**：Python 调用脚本、Streamlit 可视化界面 / Python call scripts, Streamlit visual dashboard
 
 ---
 
@@ -60,6 +62,7 @@ Built on [RAGFlow](https://github.com/infiniflow/ragflow), ComplianceRAG is a bi
 
 - Docker >= 24.0 & Docker Compose >= v2.26
 - RAM >= 16 GB
+- Python >= 3.10
 - 任意 LLM API Key（支持 OpenAI / Claude / DeepSeek / Kimi 等）
 
 ### 1. 启动 RAGFlow / Start RAGFlow
@@ -88,8 +91,10 @@ Create a Dataset named `AI Governance Docs` in RAGFlow and upload:
 **推荐 chunking 设置 / Recommended chunking settings:**
 - 策略：`parent-child`
 - 开启 TOC 提取（长文档效果更好）
+- `chunk_token_num`：`512`（合规条款文档推荐，默认 128 太小）
 - 相似度阈值：`0.3`
 - Top N：`6`（问答）/ `8`（差距分析）
+- 向量/关键词权重：`0.50 / 0.50`（条款编号精确匹配场景）
 
 ### 3. 配置 Agent 工作流 / Configure Agent workflows
 
@@ -99,11 +104,26 @@ Follow the step-by-step instructions in [`docs/agent-setup.md`](docs/agent-setup
 - **辅导版双语问答工作流** — 合规问答
 - **差距分析_NIST RMF** — 文档差距分析
 
-### 4. 使用 Python 脚本调用 / Call via Python script
+### 4. 启动可视化报告界面 / Launch the visual dashboard
 
 ```bash
 pip install -r requirements.txt
+streamlit run app.py
+```
 
+浏览器自动打开 `http://localhost:8501`。  
+Browser auto-opens at `http://localhost:8501`.
+
+**两种模式 / Two modes:**
+
+| 模式 | 说明 |
+|------|------|
+| 🧪 Demo | 无需配置，直接展示内置示例分析结果，包含雷达图、柱状图、差距详情卡片 |
+| 🔴 Live | 填入 RAGFlow API Key + Agent ID，粘贴真实文档内容即可实时分析 |
+
+### 5. 使用 Python 脚本调用 / Call via Python script
+
+```bash
 # 差距分析 / Gap analysis
 python scripts/gap_analyzer.py --input your_policy.txt
 
@@ -118,8 +138,8 @@ python scripts/batch_scan.py --dir ./docs/policies/
 ```
 compliance-rag/
 ├── README.md
-├── README_zh.md
 ├── requirements.txt
+├── app.py                      # Streamlit 可视化报告界面
 ├── docs/
 │   ├── agent-setup.md          # Agent 配置详细步骤
 │   └── architecture.png        # 架构图
@@ -180,11 +200,12 @@ compliance-rag/
 
 - [x] NIST AI RMF 差距分析
 - [x] 双语问答（中/英）
+- [x] Streamlit 可视化报告界面
+- [x] 批量文档扫描 CLI
 - [ ] ISO 42001 差距分析
 - [ ] EU AI Act 风险分级评估
-- [ ] Streamlit 可视化报告界面
+- [ ] 检索评估集（召回率 / 条款命中率）
 - [ ] PDF 报告导出
-- [ ] 批量文档扫描 CLI
 
 ---
 
@@ -192,6 +213,8 @@ compliance-rag/
 
 - [RAGFlow](https://github.com/infiniflow/ragflow) — RAG 引擎底座
 - [Kimi API](https://platform.moonshot.cn/) — LLM 推理（可替换）
+- [Streamlit](https://streamlit.io/) — 可视化界面
+- [Plotly](https://plotly.com/) — 图表渲染
 - [NIST AI RMF](https://airc.nist.gov/RMF_Overview) — 框架来源
 
 ---
